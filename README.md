@@ -115,3 +115,8 @@ Edit the layout in `app` or content in `data`. With live reloading, the pages au
 
 `next.config.js` - configuration related to Next.js. You need to adapt the Content Security Policy if you want to load scripts, images etc. from other domains.
 
+## Deployment
+
+Agentic Blog Writer saves files on server filesystem. Apps that perform filesystem writes cannot be deployed on Vercel or Netlify without elaborate workarounds; AWS is the recommended platform for such applications.
+
+

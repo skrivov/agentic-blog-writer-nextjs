@@ -102,3 +102,7 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Deployment
+
+Agentic Blog Writer saves files on server filesystem. Apps that perform filesystem writes cannot be deployed on Vercel or Netlify without elaborate workarounds; AWS is the recommended platform for such applications.

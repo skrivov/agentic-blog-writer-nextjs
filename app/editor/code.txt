@@ -1,0 +1,603 @@
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/AiEditor.tsx ==========
+
+// File: /app/editor/AiEditor.tsx
+'use client'
+
+import React from 'react'
+import AiOutputPreview from './components/AiOutputPreview'
+import PromptArea from './components/PromptArea'
+import WorkflowButtons from './components/WorkflowButtons'
+import ProcessingModal from './components/ProcessingModal'
+
+interface AiEditorProps {
+    mdx: any; // MDXRemoteSerializeResult or null
+    prompt: string;
+    onPromptChange: (value: string) => void;
+    onSubmit: () => void;
+    onSave: () => void;
+    onClear: () => void;
+    isLoading: boolean;
+    workflowButtons: { key: string; title: string }[];
+    selectedWorkflow: string;
+    workflowTitle: string;
+    onSelectWorkflow: (workflowKey: string) => void;
+}
+
+export default function AiEditor({
+    mdx,
+    prompt,
+    onPromptChange,
+    onSubmit,
+    onSave,
+    onClear,
+    isLoading,
+    workflowButtons,
+    selectedWorkflow,
+    workflowTitle,
+    onSelectWorkflow,
+}: AiEditorProps) {
+    // onKeyDown handler for the prompt area.
+    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            onSubmit()
+        }
+    }
+
+    // Extract the blog title from MDX frontmatter if available.
+    const blogTitle = mdx?.frontmatter?.title || 'Blog Preview'
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            {/* Render the processing modal when LLM is working */}
+            {isLoading && (
+                <ProcessingModal workflowTitle={workflowTitle} prompt={prompt} />
+            )}
+
+            {/* Top Bar: Render only if MDX content exists (revision state) */}
+            {mdx && (
+                <div className="p-4 flex justify-between items-center border-b">
+                    <h2 className="text-lg font-bold">{blogTitle}</h2>
+                    {/* Button group: Clear and Publish remain together */}
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={onClear}
+                            disabled={isLoading}
+                            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-60"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            onClick={onSave}
+                            disabled={isLoading}
+                            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-60"
+                        >
+                            Publish
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* MDX Preview Panel: Render only when MDX content exists */}
+            {mdx && <AiOutputPreview mdx={mdx} />}
+
+            {/* Prompt & Workflow Section */}
+            <div className="p-4 border-t space-y-4">
+                <WorkflowButtons
+                    workflows={workflowButtons}
+                    selectedWorkflow={selectedWorkflow}
+                    onSelectWorkflow={onSelectWorkflow}
+                    isLoading={isLoading}
+                />
+                <PromptArea
+                    prompt={prompt}
+                    onPromptChange={onPromptChange}
+                    onSubmit={onSubmit}
+                    onKeyDown={handleKeyDown}
+                    isLoading={isLoading}
+                />
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/parseSections.tsx ==========
+
+/**
+ * In a real app, you'd parse the MDX frontmatter, headings up to h4, etc.
+ * For demonstration, we return some static sections.
+ */
+export function parseSectionsFromRawMdx(rawMdx: string = '') {
+    return [
+        {
+            id: 'sec1',
+            heading: 'Introduction',
+            content: 'Lorem ipsum introduction...\nMore lines...\n[User Prompt was: ' + rawMdx.slice(0, 30) + '...]',
+        },
+        {
+            id: 'sec2',
+            heading: 'Details',
+            content: 'Details about subtopic. Possibly code blocks, images, etc...',
+        },
+        {
+            id: 'sec3',
+            heading: 'Conclusion',
+            content: 'Final summary paragraphs here...',
+        },
+    ]
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/EditorClient.tsx ==========
+
+// File: /app/editor/EditorClient.tsx
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { workflowsMetadata } from '@/lib/workflowsMetadata'
+import type { MDXRemoteSerializeResult } from 'next-mdx-remote'
+import AiEditor from './AiEditor'
+import matter from 'gray-matter'
+import GithubSlugger from 'github-slugger'
+
+export default function EditorClient() {
+    const router = useRouter()
+
+    const [selectedWorkflow, setSelectedWorkflow] = useState(workflowsMetadata[0].key)
+    const [isLoading, setIsLoading] = useState(false)
+    const [prompt, setPrompt] = useState('')
+    const [rawMdx, setRawMdx] = useState<string>('')
+    const [serializedMdx, setSerializedMdx] = useState<MDXRemoteSerializeResult | null>(null)
+
+    // Determine if the blog has been generated (revision state)
+    const isRevision = serializedMdx !== null && rawMdx !== ''
+
+    // Filter workflows based on applicability:
+    // - In "new" state, show workflows with applicability "new" or "both".
+    // - In "revision" state, show workflows with applicability "modification" or "both".
+    const filteredWorkflows = workflowsMetadata.filter(wf =>
+        isRevision
+            ? wf.applicability === 'modification' || wf.applicability === 'both'
+            : wf.applicability === 'new' || wf.applicability === 'both'
+    )
+
+    // Ensure the selected workflow remains valid when the filtered list changes.
+    useEffect(() => {
+        if (!filteredWorkflows.find(wf => wf.key === selectedWorkflow)) {
+            if (filteredWorkflows.length > 0) {
+                setSelectedWorkflow(filteredWorkflows[0].key)
+            }
+        }
+    }, [selectedWorkflow, filteredWorkflows])
+
+    async function handleSubmit() {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ workflowKey: selectedWorkflow, prompt }),
+            })
+            if (!response.ok) throw new Error(`Error: ${response.status}`)
+            const data = await response.json()
+            setRawMdx(data.rawMdx)
+            setSerializedMdx(data.mdx)
+            // Clear the prompt after generating the blog
+            setPrompt('')
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    function handleSave() {
+        if (!rawMdx) {
+            console.error('No MDX content to save.')
+            return
+        }
+        const parsed = matter(rawMdx)
+        const title = parsed.data.title || 'untitled'
+        const slugger = new GithubSlugger()
+        const slug = slugger.slug(title)
+
+        fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rawMdx, slug }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Save failed with status ${response.status}`)
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log('Post saved successfully:', data)
+                router.push('/')
+            })
+            .catch(error => {
+                console.error('Error saving post:', error)
+            })
+    }
+
+    function handleClear() {
+        setRawMdx('')
+        setSerializedMdx(null)
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSubmit()
+        }
+    }
+
+    // Compute the selected workflow's title from metadata.
+    const selectedWorkflowDetails = workflowsMetadata.find(wf => wf.key === selectedWorkflow)
+    const workflowTitle = selectedWorkflowDetails ? selectedWorkflowDetails.title : ''
+
+    return (
+        <AiEditor
+            mdx={serializedMdx}
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            onSubmit={handleSubmit}
+            onSave={handleSave}
+            onClear={handleClear}
+            isLoading={isLoading}
+            workflowButtons={filteredWorkflows.map((wf) => ({ key: wf.key, title: wf.title }))}
+            selectedWorkflow={selectedWorkflow}
+            workflowTitle={workflowTitle}
+            onSelectWorkflow={setSelectedWorkflow}
+        />
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/page.tsx ==========
+
+// File: /app/editor/page.tsx
+import EditorClient from './EditorClient'
+export default EditorClient
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/PromptArea.tsx ==========
+
+// File: /app/editor/components/PromptArea.tsx
+'use client'
+
+import React from 'react'
+import ArrowUpIcon from './ArrowUpIcon' // See ArrowUpIcon.tsx below
+
+interface PromptAreaProps {
+    prompt: string
+    onPromptChange: (value: string) => void
+    onSubmit: () => void
+    onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
+    isLoading: boolean
+}
+
+export default function PromptArea({
+    prompt,
+    onPromptChange,
+    onSubmit,
+    onKeyDown,
+    isLoading,
+}: PromptAreaProps) {
+    return (
+        <div className="mb-6">
+            <label htmlFor="prompt" className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200">
+                Blog Description
+            </label>
+            <div className="flex items-start gap-2">
+                <textarea
+                    id="prompt"
+                    value={prompt}
+                    onChange={(e) => onPromptChange(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="e.g., A tutorial on how to make perfect coffee..."
+                    rows={4}
+                    className="block w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                />
+                <button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={isLoading}
+                    className="mt-1 inline-flex h-10 items-center justify-center self-end rounded bg-blue-600 px-3 py-2 font-medium text-white shadow hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    title="Submit (Ctrl+Enter)"
+                >
+                    <ArrowUpIcon />
+                </button>
+            </div>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                Press{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Enter
+                </kbd>{' '}
+                to submit. Hold{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Shift
+                </kbd>{' '}
+                +{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Enter
+                </kbd>{' '}
+                to add a new line.
+            </p>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/ProcessingModal.tsx ==========
+
+// File: /app/editor/components/ProcessingModal.tsx
+'use client'
+
+import React from 'react'
+
+interface ProcessingModalProps {
+    workflowTitle: string;
+    prompt: string;
+}
+
+export default function ProcessingModal({ workflowTitle, prompt }: ProcessingModalProps) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-md rounded bg-white p-6 text-center dark:bg-gray-800">
+                <div className="flex justify-center mb-4">
+                    {/* A simple spinner icon */}
+                    <svg
+                        className="animate-spin h-8 w-8 text-blue-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">Processing your request...</h3>
+                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    The LLM is working on your prompt using{' '}
+                    <span className="font-bold">{workflowTitle}</span>.
+                    <br />
+                    This may take up to a minute.
+                </p>
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/FrontmatterPreview.tsx ==========
+
+// File: /app/editor/components/FrontmatterPreview.tsx
+
+import React from 'react'
+
+interface FrontmatterPreviewProps {
+    frontmatter: Record<string, any>
+}
+
+export default function FrontmatterPreview({ frontmatter }: FrontmatterPreviewProps) {
+    if (!frontmatter) return null
+
+    return (
+        <div className="mb-6 p-3 border rounded bg-gray-50 dark:bg-gray-800">
+            <h3 className="font-bold mb-2">Front Matter</h3>
+            <form className="space-y-2">
+                {Object.entries(frontmatter).map(([key, value]) => (
+                    <div key={key} className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                            {key}
+                        </label>
+                        <input
+                            type="text"
+                            value={String(value)}
+                            readOnly
+                            className="w-full rounded border border-gray-300 p-1 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+                ))}
+            </form>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/AiOutputPreview.tsx ==========
+
+// File: /app/editor/AiOutputPreview.tsx
+'use client'
+
+import React from 'react'
+import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+import { components as defaultMDXComponents } from '@/components/MDXComponents'
+
+interface AiOutputPreviewProps {
+  mdx: MDXRemoteSerializeResult | null
+}
+
+export default function AiOutputPreview({ mdx }: AiOutputPreviewProps) {
+  // Check if the mdx prop exists and has the necessary compiledSource property.
+  if (!mdx || !('compiledSource' in mdx)) {
+    return <div className="p-4 text-gray-600">No blog content found.</div>
+  }
+
+  // Merge in frontmatter if it doesn’t exist.
+  const effectiveMDX = { ...mdx, frontmatter: mdx.frontmatter || {} };
+
+  const hasFrontmatter =
+    effectiveMDX.frontmatter &&
+    Object.keys(effectiveMDX.frontmatter).length > 0;
+
+  return (
+    <div className="prose dark:prose-invert p-4">
+      {hasFrontmatter && (
+        <Disclosure>
+          {({ open }) => (
+            <div className="mb-6">
+              <DisclosureButton className="flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75 dark:text-gray-100 dark:bg-gray-800">
+                <span>Front Matter</span>
+                <span>{open ? 'Hide' : 'Show'}</span>
+              </DisclosureButton>
+              <DisclosurePanel className="px-4 pt-4 pb-2 text-sm text-gray-500 dark:text-gray-300">
+                <form className="space-y-2">
+                  {Object.entries(effectiveMDX.frontmatter).map(([key, value]) => (
+                    <div key={key} className="flex flex-col">
+                      <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {key}
+                      </label>
+                      <input
+                        type="text"
+                        value={String(value)}
+                        readOnly
+                        className="w-full rounded border border-gray-300 p-1 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                  ))}
+                </form>
+              </DisclosurePanel>
+            </div>
+          )}
+        </Disclosure>
+      )}
+      <MDXRemote {...effectiveMDX} components={defaultMDXComponents} />
+    </div>
+  );
+}
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/TopBar.tsx ==========
+
+// File: /app/editor/components/TopBar.tsx
+'use client'
+
+import React from 'react'
+
+interface ButtonConfig {
+    text: string
+    onClick: () => void
+    className?: string
+}
+
+interface TopBarProps {
+    leftButtonText: string
+    onLeftButtonClick: () => void
+    rightButtons: ButtonConfig[]
+}
+
+export default function TopBar({ leftButtonText, onLeftButtonClick, rightButtons }: TopBarProps) {
+    return (
+        <div className="flex items-center justify-between bg-gray-100 p-4 dark:bg-gray-800">
+            <button
+                onClick={onLeftButtonClick}
+                className="rounded bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+                {leftButtonText}
+            </button>
+            <div className="space-x-2">
+                {rightButtons.map((btn, index) => (
+                    <button
+                        key={index}
+                        onClick={btn.onClick}
+                        className={`rounded px-4 py-2 text-white ${btn.className ? btn.className : ''}`}
+                    >
+                        {btn.text}
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/ArrowUpIcon.tsx ==========
+
+// File: /app/editor/components/ArrowUpIcon.tsx
+'use client'
+
+import React from 'react'
+
+export default function ArrowUpIcon() {
+    return (
+        <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/WorkflowButtons.tsx ==========
+
+// File: /app/editor/components/WorkflowButtons.tsx
+'use client'
+
+import React from 'react'
+
+interface Workflow {
+    key: string
+    title: string
+}
+
+interface WorkflowButtonsProps {
+    workflows: Workflow[]
+    selectedWorkflow: string
+    onSelectWorkflow: (workflowKey: string) => void
+    isLoading: boolean
+}
+
+export default function WorkflowButtons({
+    workflows,
+    selectedWorkflow,
+    onSelectWorkflow,
+    isLoading,
+}: WorkflowButtonsProps) {
+    return (
+        <div className="mb-6 flex flex-wrap gap-2">
+            {workflows.map((wf) => {
+                const isSelected = wf.key === selectedWorkflow
+                return (
+                    <button
+                        key={wf.key}
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => onSelectWorkflow(wf.key)}
+                        className={[
+                            'rounded px-4 py-2 font-medium shadow transition-colors',
+                            isSelected
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:text-white',
+                            isLoading ? 'opacity-60 cursor-not-allowed' : '',
+                        ].join(' ')}
+                    >
+                        {wf.title}
+                    </button>
+                )
+            })}
+        </div>
+    )
+}
+

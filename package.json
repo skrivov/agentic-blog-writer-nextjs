@@ -13,6 +13,10 @@
   },
   "dependencies": {
     "@headlessui/react": "2.2.0",
+    "@langchain/community": "^0.3.29",
+    "@langchain/core": "^0.3.39",
+    "@langchain/langgraph": "^0.2.45",
+    "@langchain/openai": "^0.4.3",
     "@next/bundle-analyzer": "15.1.4",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
@@ -26,6 +30,7 @@
     "image-size": "1.0.0",
     "next": "15.1.4",
     "next-contentlayer2": "0.5.3",
+    "next-mdx-remote": "^5.0.0",
     "next-themes": "^0.3.0",
     "pliny": "0.4.0",
     "postcss": "^8.4.24",

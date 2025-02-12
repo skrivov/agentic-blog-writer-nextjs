@@ -1,0 +1,1543 @@
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/theme-providers.tsx ==========
+
+'use client'
+
+import { ThemeProvider } from 'next-themes'
+import siteMetadata from '@/data/siteMetadata'
+
+export function ThemeProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme={siteMetadata.theme} enableSystem>
+      {children}
+    </ThemeProvider>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/layout.tsx ==========
+
+import 'css/tailwind.css'
+import 'pliny/search/algolia.css'
+import 'remark-github-blockquote-alert/alert.css'
+
+import { Space_Grotesk } from 'next/font/google'
+import { Analytics, AnalyticsConfig } from 'pliny/analytics'
+import { SearchProvider, SearchConfig } from 'pliny/search'
+import Header from '@/components/Header'
+import SectionContainer from '@/components/SectionContainer'
+import Footer from '@/components/Footer'
+import siteMetadata from '@/data/siteMetadata'
+import { ThemeProviders } from './theme-providers'
+import { Metadata } from 'next'
+
+const space_grotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+})
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteMetadata.siteUrl),
+  title: {
+    default: siteMetadata.title,
+    template: `%s | ${siteMetadata.title}`,
+  },
+  description: siteMetadata.description,
+  openGraph: {
+    title: siteMetadata.title,
+    description: siteMetadata.description,
+    url: './',
+    siteName: siteMetadata.title,
+    images: [siteMetadata.socialBanner],
+    locale: 'en_US',
+    type: 'website',
+  },
+  alternates: {
+    canonical: './',
+    types: {
+      'application/rss+xml': `${siteMetadata.siteUrl}/feed.xml`,
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  twitter: {
+    title: siteMetadata.title,
+    card: 'summary_large_image',
+    images: [siteMetadata.socialBanner],
+  },
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const basePath = process.env.BASE_PATH || ''
+
+  return (
+    <html
+      lang={siteMetadata.language}
+      className={`${space_grotesk.variable} scroll-smooth`}
+      suppressHydrationWarning
+    >
+      <link
+        rel="apple-touch-icon"
+        sizes="76x76"
+        href={`${basePath}/static/favicons/apple-touch-icon.png`}
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href={`${basePath}/static/favicons/favicon-32x32.png`}
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href={`${basePath}/static/favicons/favicon-16x16.png`}
+      />
+      <link rel="manifest" href={`${basePath}/static/favicons/site.webmanifest`} />
+      <link
+        rel="mask-icon"
+        href={`${basePath}/static/favicons/safari-pinned-tab.svg`}
+        color="#5bbad5"
+      />
+      <meta name="msapplication-TileColor" content="#000000" />
+      <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
+      <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
+      <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
+      <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
+        <ThemeProviders>
+          <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
+          <SectionContainer>
+            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+              <Header />
+              <main className="mb-auto">{children}</main>
+            </SearchProvider>
+            <Footer />
+          </SectionContainer>
+        </ThemeProviders>
+      </body>
+    </html>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/Main.tsx ==========
+
+import Link from '@/components/Link'
+import Tag from '@/components/Tag'
+import siteMetadata from '@/data/siteMetadata'
+import { formatDate } from 'pliny/utils/formatDate'
+import NewsletterForm from 'pliny/ui/NewsletterForm'
+
+const MAX_DISPLAY = 5
+
+export default function Home({ posts }) {
+  return (
+    <>
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="space-y-2 pb-8 pt-6 md:space-y-5">
+          <h1 className="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
+            Latest
+          </h1>
+          <p className="text-lg leading-7 text-gray-500 dark:text-gray-400">
+            {siteMetadata.description}
+          </p>
+        </div>
+        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+          {!posts.length && 'No posts found.'}
+          {posts.slice(0, MAX_DISPLAY).map((post) => {
+            const { slug, date, title, summary, tags } = post
+            return (
+              <li key={slug} className="py-12">
+                <article>
+                  <div className="space-y-2 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0">
+                    <dl>
+                      <dt className="sr-only">Published on</dt>
+                      <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
+                        <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                      </dd>
+                    </dl>
+                    <div className="space-y-5 xl:col-span-3">
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl font-bold leading-8 tracking-tight">
+                            <Link
+                              href={`/blog/${slug}`}
+                              className="text-gray-900 dark:text-gray-100"
+                            >
+                              {title}
+                            </Link>
+                          </h2>
+                          <div className="flex flex-wrap">
+                            {tags.map((tag) => (
+                              <Tag key={tag} text={tag} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="prose max-w-none text-gray-500 dark:text-gray-400">
+                          {summary}
+                        </div>
+                      </div>
+                      <div className="text-base font-medium leading-6">
+                        <Link
+                          href={`/blog/${slug}`}
+                          className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+                          aria-label={`Read more: "${title}"`}
+                        >
+                          Read more &rarr;
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+      {posts.length > MAX_DISPLAY && (
+        <div className="flex justify-end text-base font-medium leading-6">
+          <Link
+            href="/blog"
+            className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+            aria-label="All posts"
+          >
+            All Posts &rarr;
+          </Link>
+        </div>
+      )}
+      {siteMetadata.newsletter?.provider && (
+        <div className="flex items-center justify-center pt-4">
+          <NewsletterForm />
+        </div>
+      )}
+    </>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/sitemap.ts ==========
+
+import { MetadataRoute } from 'next'
+import { allBlogs } from 'contentlayer/generated'
+import siteMetadata from '@/data/siteMetadata'
+
+export const dynamic = 'force-static'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const siteUrl = siteMetadata.siteUrl
+
+  const blogRoutes = allBlogs
+    .filter((post) => !post.draft)
+    .map((post) => ({
+      url: `${siteUrl}/${post.path}`,
+      lastModified: post.lastmod || post.date,
+    }))
+
+  const routes = ['', 'blog', 'projects', 'tags'].map((route) => ({
+    url: `${siteUrl}/${route}`,
+    lastModified: new Date().toISOString().split('T')[0],
+  }))
+
+  return [...routes, ...blogRoutes]
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/not-found.tsx ==========
+
+import Link from '@/components/Link'
+
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-start justify-start md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6">
+      <div className="space-x-2 pb-8 pt-6 md:space-y-5">
+        <h1 className="text-6xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 md:border-r-2 md:px-6 md:text-8xl md:leading-14">
+          404
+        </h1>
+      </div>
+      <div className="max-w-md">
+        <p className="mb-4 text-xl font-bold leading-normal md:text-2xl">
+          Sorry we couldn't find this page.
+        </p>
+        <p className="mb-8">But dont worry, you can find plenty of other things on our homepage.</p>
+        <Link
+          href="/"
+          className="focus:shadow-outline-blue inline rounded-lg border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium leading-5 text-white shadow transition-colors duration-150 hover:bg-blue-700 focus:outline-none dark:hover:bg-blue-500"
+        >
+          Back to homepage
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/robots.ts ==========
+
+import { MetadataRoute } from 'next'
+import siteMetadata from '@/data/siteMetadata'
+
+export const dynamic = 'force-static'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+    },
+    sitemap: `${siteMetadata.siteUrl}/sitemap.xml`,
+    host: siteMetadata.siteUrl,
+  }
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/seo.tsx ==========
+
+import { Metadata } from 'next'
+import siteMetadata from '@/data/siteMetadata'
+
+interface PageSEOProps {
+  title: string
+  description?: string
+  image?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
+export function genPageMetadata({ title, description, image, ...rest }: PageSEOProps): Metadata {
+  return {
+    title,
+    description: description || siteMetadata.description,
+    openGraph: {
+      title: `${title} | ${siteMetadata.title}`,
+      description: description || siteMetadata.description,
+      url: './',
+      siteName: siteMetadata.title,
+      images: image ? [image] : [siteMetadata.socialBanner],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      title: `${title} | ${siteMetadata.title}`,
+      card: 'summary_large_image',
+      images: image ? [image] : [siteMetadata.socialBanner],
+    },
+    ...rest,
+  }
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/page.tsx ==========
+
+import { sortPosts, allCoreContent } from 'pliny/utils/contentlayer'
+import { allBlogs } from 'contentlayer/generated'
+import Main from './Main'
+
+export default async function Page() {
+  const sortedPosts = sortPosts(allBlogs)
+  const posts = allCoreContent(sortedPosts)
+  return <Main posts={posts} />
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/projects/page.tsx ==========
+
+import projectsData from '@/data/projectsData'
+import Card from '@/components/Card'
+import { genPageMetadata } from 'app/seo'
+
+export const metadata = genPageMetadata({ title: 'Projects' })
+
+export default function Projects() {
+  return (
+    <>
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="space-y-2 pb-8 pt-6 md:space-y-5">
+          <h1 className="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14">
+            Projects
+          </h1>
+          <p className="text-lg leading-7 text-gray-500 dark:text-gray-400">
+            Showcase your projects with a hero image (16 x 9)
+          </p>
+        </div>
+        <div className="container py-12">
+          <div className="-m-4 flex flex-wrap">
+            {projectsData.map((d) => (
+              <Card
+                key={d.title}
+                title={d.title}
+                description={d.description}
+                imgSrc={d.imgSrc}
+                href={d.href}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/about/page.tsx ==========
+
+import { Authors, allAuthors } from 'contentlayer/generated'
+import { MDXLayoutRenderer } from 'pliny/mdx-components'
+import AuthorLayout from '@/layouts/AuthorLayout'
+import { coreContent } from 'pliny/utils/contentlayer'
+import { genPageMetadata } from 'app/seo'
+
+export const metadata = genPageMetadata({ title: 'About' })
+
+export default function Page() {
+  const author = allAuthors.find((p) => p.slug === 'default') as Authors
+  const mainContent = coreContent(author)
+
+  return (
+    <>
+      <AuthorLayout content={mainContent}>
+        <MDXLayoutRenderer code={author.body.code} />
+      </AuthorLayout>
+    </>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/tags/page.tsx ==========
+
+import Link from '@/components/Link'
+import Tag from '@/components/Tag'
+import { slug } from 'github-slugger'
+import tagData from 'app/tag-data.json'
+import { genPageMetadata } from 'app/seo'
+
+export const metadata = genPageMetadata({ title: 'Tags', description: 'Things I blog about' })
+
+export default async function Page() {
+  const tagCounts = tagData as Record<string, number>
+  const tagKeys = Object.keys(tagCounts)
+  const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
+  return (
+    <>
+      <div className="flex flex-col items-start justify-start divide-y divide-gray-200 dark:divide-gray-700 md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6 md:divide-y-0">
+        <div className="space-x-2 pb-8 pt-6 md:space-y-5">
+          <h1 className="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl sm:leading-10 md:border-r-2 md:px-6 md:text-6xl md:leading-14">
+            Tags
+          </h1>
+        </div>
+        <div className="flex max-w-lg flex-wrap">
+          {tagKeys.length === 0 && 'No tags found.'}
+          {sortedTags.map((t) => {
+            return (
+              <div key={t} className="mb-2 mr-5 mt-2">
+                <Tag text={t} />
+                <Link
+                  href={`/tags/${slug(t)}`}
+                  className="-ml-2 text-sm font-semibold uppercase text-gray-600 dark:text-gray-300"
+                  aria-label={`View posts tagged ${t}`}
+                >
+                  {` (${tagCounts[t]})`}
+                </Link>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/tags/[tag]/page.tsx ==========
+
+import { slug } from 'github-slugger'
+import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import siteMetadata from '@/data/siteMetadata'
+import ListLayout from '@/layouts/ListLayoutWithTags'
+import { allBlogs } from 'contentlayer/generated'
+import tagData from 'app/tag-data.json'
+import { genPageMetadata } from 'app/seo'
+import { Metadata } from 'next'
+
+const POSTS_PER_PAGE = 5
+
+export async function generateMetadata(props: {
+  params: Promise<{ tag: string }>
+}): Promise<Metadata> {
+  const params = await props.params
+  const tag = decodeURI(params.tag)
+  return genPageMetadata({
+    title: tag,
+    description: `${siteMetadata.title} ${tag} tagged content`,
+    alternates: {
+      canonical: './',
+      types: {
+        'application/rss+xml': `${siteMetadata.siteUrl}/tags/${tag}/feed.xml`,
+      },
+    },
+  })
+}
+
+export const generateStaticParams = async () => {
+  const tagCounts = tagData as Record<string, number>
+  const tagKeys = Object.keys(tagCounts)
+  return tagKeys.map((tag) => ({
+    tag: encodeURI(tag),
+  }))
+}
+
+export default async function TagPage(props: { params: Promise<{ tag: string }> }) {
+  const params = await props.params
+  const tag = decodeURI(params.tag)
+  const title = tag[0].toUpperCase() + tag.split(' ').join('-').slice(1)
+  const filteredPosts = allCoreContent(
+    sortPosts(allBlogs.filter((post) => post.tags && post.tags.map((t) => slug(t)).includes(tag)))
+  )
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
+  const initialDisplayPosts = filteredPosts.slice(0, POSTS_PER_PAGE)
+  const pagination = {
+    currentPage: 1,
+    totalPages: totalPages,
+  }
+
+  return (
+    <ListLayout
+      posts={filteredPosts}
+      initialDisplayPosts={initialDisplayPosts}
+      pagination={pagination}
+      title={title}
+    />
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/tags/[tag]/page/[page]/page.tsx ==========
+
+import { slug } from 'github-slugger'
+import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import ListLayout from '@/layouts/ListLayoutWithTags'
+import { allBlogs } from 'contentlayer/generated'
+import tagData from 'app/tag-data.json'
+import { notFound } from 'next/navigation'
+
+const POSTS_PER_PAGE = 5
+
+export const generateStaticParams = async () => {
+  const tagCounts = tagData as Record<string, number>
+  return Object.keys(tagCounts).flatMap((tag) => {
+    const postCount = tagCounts[tag]
+    const totalPages = Math.max(1, Math.ceil(postCount / POSTS_PER_PAGE))
+    return Array.from({ length: totalPages }, (_, i) => ({
+      tag: encodeURI(tag),
+      page: (i + 1).toString(),
+    }))
+  })
+}
+
+export default async function TagPage(props: { params: Promise<{ tag: string; page: string }> }) {
+  const params = await props.params
+  const tag = decodeURI(params.tag)
+  const title = tag[0].toUpperCase() + tag.split(' ').join('-').slice(1)
+  const pageNumber = parseInt(params.page)
+  const filteredPosts = allCoreContent(
+    sortPosts(allBlogs.filter((post) => post.tags && post.tags.map((t) => slug(t)).includes(tag)))
+  )
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
+
+  // Return 404 for invalid page numbers or empty pages
+  if (pageNumber <= 0 || pageNumber > totalPages || isNaN(pageNumber)) {
+    return notFound()
+  }
+  const initialDisplayPosts = filteredPosts.slice(
+    POSTS_PER_PAGE * (pageNumber - 1),
+    POSTS_PER_PAGE * pageNumber
+  )
+  const pagination = {
+    currentPage: pageNumber,
+    totalPages: totalPages,
+  }
+
+  return (
+    <ListLayout
+      posts={filteredPosts}
+      initialDisplayPosts={initialDisplayPosts}
+      pagination={pagination}
+      title={title}
+    />
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/api/newsletter/route.ts ==========
+
+import { NewsletterAPI } from 'pliny/newsletter'
+import siteMetadata from '@/data/siteMetadata'
+
+export const dynamic = 'force-static'
+
+const handler = NewsletterAPI({
+  // @ts-ignore
+  provider: siteMetadata.newsletter.provider,
+})
+
+export { handler as GET, handler as POST }
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/api/posts/route.ts ==========
+
+// Place this file in: /app/api/posts/route.ts
+
+import { NextResponse } from 'next/server'
+import fs from 'fs/promises'
+import path from 'path'
+import matter from 'gray-matter'
+import siteMetadata from '@/data/siteMetadata'
+
+export async function POST(req: Request) {
+  try {
+    const { rawMdx, slug } = await req.json() as { rawMdx: string; slug: string }
+    if (!rawMdx || !slug) {
+      return NextResponse.json(
+        { error: 'Missing rawMdx or slug in the request body.' },
+        { status: 400 }
+      )
+    }
+
+    // Parse the MDX file to separate frontmatter and content.
+    const { content, data: frontmatter } = matter(rawMdx)
+
+    // Ensure SEO metadata is present. If missing, use default values.
+    const updatedFrontmatter = {
+      ...frontmatter,
+      // Directly use title and summary for SEO, falling back to site defaults if missing.
+      title: frontmatter.title || siteMetadata.title,
+      description: frontmatter.summary || siteMetadata.description,
+    }
+
+    // Rebuild the MDX file with the updated frontmatter.
+    const updatedMDX = matter.stringify(content, updatedFrontmatter)
+
+    // Define the directory and file path.
+    const blogDir = path.join(process.cwd(), 'data', 'blog')
+    try {
+      await fs.access(blogDir)
+    } catch {
+      await fs.mkdir(blogDir, { recursive: true })
+    }
+    const filePath = path.join(blogDir, `${slug}.mdx`)
+    await fs.writeFile(filePath, updatedMDX, 'utf8')
+
+    return NextResponse.json({ message: 'Post saved successfully', filePath })
+  } catch (error: unknown) {
+    console.error('Error saving post:', error)
+    return NextResponse.json({ error: 'Error saving post' }, { status: 500 })
+  }
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/api/ai/route.ts ==========
+
+// File: /app/api/ai/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { workflows } from '@/lib/workflowsConfig'
+import { serialize } from 'next-mdx-remote/serialize'
+import matter from 'gray-matter'
+
+// Import the plugins.
+import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
+import rehypeKatex from 'rehype-katex'
+import rehypePrismPlus from 'rehype-prism-plus'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+
+export async function POST(request: NextRequest) {
+    try {
+        const { workflowKey, prompt, rawMdx } = await request.json() as {
+            workflowKey: string,
+            prompt: string,
+            rawMdx?: string
+        };
+
+        if (!workflowKey || !prompt) {
+            return NextResponse.json(
+                { error: 'Missing "workflowKey" or "prompt" in request body.' },
+                { status: 400 }
+            );
+        }
+
+        const workflow = workflows.find(w => w.key === workflowKey);
+        if (!workflow) {
+            return NextResponse.json(
+                { error: `No workflow found for key: ${workflowKey}` },
+                { status: 400 }
+            );
+        }
+
+        // Call the workflow's handler.
+        const outputMDX = await workflow.handler({ prompt, rawMdx });
+        const trimmedMDX = outputMDX.trim();
+
+        // (If your MDX output from the LLM is wrapped in code fences, remove them)
+        let mdxContent = trimmedMDX;
+        if (mdxContent.startsWith("```mdx")) {
+            mdxContent = mdxContent.replace(/^```mdx\s*/, '');
+            if (mdxContent.endsWith("```")) {
+                mdxContent = mdxContent.slice(0, -3);
+            }
+            mdxContent = mdxContent.trim();
+        }
+
+        // Use gray-matter to extract the YAML frontmatter (if present)
+        const parsed = matter(mdxContent);
+        // Now parsed.data holds the frontmatter, and parsed.content is the MDX without the frontmatter.
+
+        // Serialize the MDX content using the extra plugins.
+        const serializedMDX = await serialize(parsed.content, {
+            mdxOptions: {
+                remarkPlugins: [remarkMath],
+                rehypePlugins: [rehypeKatex, rehypePrismPlus],
+            },
+        });
+
+        // For saving, rebuild the MDX file with the frontmatter.
+        const rawForSaving = matter.stringify(parsed.content, parsed.data);
+
+        return NextResponse.json({
+            rawMdx: rawForSaving,
+            mdx: { ...serializedMDX, frontmatter: parsed.data },
+        });
+    } catch (error: unknown) {
+        console.error('Error in AI route:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/AiEditor.tsx ==========
+
+// File: /app/editor/AiEditor.tsx
+'use client'
+
+import React from 'react'
+import AiOutputPreview from './components/AiOutputPreview'
+import PromptArea from './components/PromptArea'
+import WorkflowButtons from './components/WorkflowButtons'
+import ProcessingModal from './components/ProcessingModal'
+
+interface AiEditorProps {
+    mdx: any; // MDXRemoteSerializeResult or null
+    prompt: string;
+    onPromptChange: (value: string) => void;
+    onSubmit: () => void;
+    onSave: () => void;
+    onClear: () => void;
+    isLoading: boolean;
+    workflowButtons: { key: string; title: string }[];
+    selectedWorkflow: string;
+    workflowTitle: string;
+    onSelectWorkflow: (workflowKey: string) => void;
+    promptLabel: string;  // New prop for prompt label text
+}
+
+export default function AiEditor({
+    mdx,
+    prompt,
+    onPromptChange,
+    onSubmit,
+    onSave,
+    onClear,
+    isLoading,
+    workflowButtons,
+    selectedWorkflow,
+    workflowTitle,
+    onSelectWorkflow,
+    promptLabel,
+}: AiEditorProps) {
+    // onKeyDown handler for the prompt area.
+    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            onSubmit();
+        }
+    }
+
+    // Extract the blog title from MDX frontmatter if available.
+    const blogTitle = mdx?.frontmatter?.title || 'Blog Preview';
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            {/* Render the processing modal when LLM is working */}
+            {isLoading && (
+                <ProcessingModal workflowTitle={workflowTitle} prompt={prompt} />
+            )}
+
+            {/* Top Bar: Render only if MDX content exists (revision state) */}
+            {mdx && (
+                <div className="p-4 flex justify-between items-center border-b">
+                    <h2 className="text-lg font-bold">{blogTitle}</h2>
+                    {/* Button group: Clear and Publish remain together */}
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={onClear}
+                            disabled={isLoading}
+                            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-60"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            onClick={onSave}
+                            disabled={isLoading}
+                            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-60"
+                        >
+                            Publish
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* MDX Preview Panel: Render only when MDX content exists */}
+            {mdx && <AiOutputPreview mdx={mdx} />}
+
+            {/* Prompt & Workflow Section */}
+            <div className="p-4 border-t space-y-4">
+                <WorkflowButtons
+                    workflows={workflowButtons}
+                    selectedWorkflow={selectedWorkflow}
+                    onSelectWorkflow={onSelectWorkflow}
+                    isLoading={isLoading}
+                />
+                <PromptArea
+                    label={promptLabel}  // Pass the label down
+                    prompt={prompt}
+                    onPromptChange={onPromptChange}
+                    onSubmit={onSubmit}
+                    onKeyDown={handleKeyDown}
+                    isLoading={isLoading}
+                />
+            </div>
+        </div>
+    );
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/parseSections.tsx ==========
+
+/**
+ * In a real app, you'd parse the MDX frontmatter, headings up to h4, etc.
+ * For demonstration, we return some static sections.
+ */
+export function parseSectionsFromRawMdx(rawMdx: string = '') {
+    return [
+        {
+            id: 'sec1',
+            heading: 'Introduction',
+            content: 'Lorem ipsum introduction...\nMore lines...\n[User Prompt was: ' + rawMdx.slice(0, 30) + '...]',
+        },
+        {
+            id: 'sec2',
+            heading: 'Details',
+            content: 'Details about subtopic. Possibly code blocks, images, etc...',
+        },
+        {
+            id: 'sec3',
+            heading: 'Conclusion',
+            content: 'Final summary paragraphs here...',
+        },
+    ]
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/EditorClient.tsx ==========
+
+// File: /app/editor/EditorClient.tsx
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { workflowsMetadata } from '@/lib/workflowsMetadata'
+import type { MDXRemoteSerializeResult } from 'next-mdx-remote'
+import AiEditor from './AiEditor'
+import matter from 'gray-matter'
+import GithubSlugger from 'github-slugger'
+
+export default function EditorClient() {
+    const router = useRouter()
+
+    const [selectedWorkflow, setSelectedWorkflow] = useState(workflowsMetadata[0].key)
+    const [isLoading, setIsLoading] = useState(false)
+    const [prompt, setPrompt] = useState('')
+    const [rawMdx, setRawMdx] = useState<string>('')
+    const [serializedMdx, setSerializedMdx] = useState<MDXRemoteSerializeResult | null>(null)
+
+    // Determine if the blog has been generated (i.e. modification mode)
+    const isRevision = serializedMdx !== null && rawMdx !== ''
+
+    // Filter workflows based on applicability:
+    // - In "new" state, show workflows with applicability "new" or "both".
+    // - In "revision" state, show workflows with applicability "modification" or "both".
+    const filteredWorkflows = workflowsMetadata.filter(wf =>
+        isRevision
+            ? wf.applicability === 'modification' || wf.applicability === 'both'
+            : wf.applicability === 'new' || wf.applicability === 'both'
+    )
+
+    // Ensure the selected workflow remains valid when the filtered list changes.
+    useEffect(() => {
+        if (!filteredWorkflows.find(wf => wf.key === selectedWorkflow)) {
+            if (filteredWorkflows.length > 0) {
+                setSelectedWorkflow(filteredWorkflows[0].key)
+            }
+        }
+    }, [selectedWorkflow, filteredWorkflows])
+
+    // Compute the prompt label based on modification mode.
+    const promptLabel = isRevision
+        ? "Suggest improvements to your blog"
+        : "Describe your Blog";
+
+    async function handleSubmit() {
+        setIsLoading(true)
+        try {
+            // If in revision mode, include rawMdx in the API payload.
+            const payload: any = { workflowKey: selectedWorkflow, prompt };
+            if (isRevision) {
+                payload.rawMdx = rawMdx;
+            }
+            const response = await fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+            const data = await response.json();
+            setRawMdx(data.rawMdx);
+            setSerializedMdx(data.mdx);
+            // Clear the prompt after generating the blog
+            setPrompt('');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    function handleSave() {
+        if (!rawMdx) {
+            console.error('No MDX content to save.');
+            return;
+        }
+        const parsed = matter(rawMdx);
+        const title = parsed.data.title || 'untitled';
+        const slugger = new GithubSlugger();
+        const slug = slugger.slug(title);
+
+        fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rawMdx, slug }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Save failed with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Post saved successfully:', data);
+                router.push('/');
+            })
+            .catch(error => {
+                console.error('Error saving post:', error);
+            });
+    }
+
+    function handleClear() {
+        setRawMdx('');
+        setSerializedMdx(null);
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    }
+
+    // Compute the selected workflow's title from metadata.
+    const selectedWorkflowDetails = workflowsMetadata.find(wf => wf.key === selectedWorkflow);
+    const workflowTitle = selectedWorkflowDetails ? selectedWorkflowDetails.title : '';
+
+    return (
+        <AiEditor
+            mdx={serializedMdx}
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            onSubmit={handleSubmit}
+            onSave={handleSave}
+            onClear={handleClear}
+            isLoading={isLoading}
+            workflowButtons={filteredWorkflows.map((wf) => ({ key: wf.key, title: wf.title }))}
+            selectedWorkflow={selectedWorkflow}
+            workflowTitle={workflowTitle}
+            onSelectWorkflow={setSelectedWorkflow}
+            promptLabel={promptLabel}   
+        />
+    );
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/page.tsx ==========
+
+// File: /app/editor/page.tsx
+import EditorClient from './EditorClient'
+export default EditorClient
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/PromptArea.tsx ==========
+
+// File: /app/editor/components/PromptArea.tsx
+'use client'
+
+import React from 'react'
+import ArrowUpIcon from './ArrowUpIcon'
+
+interface PromptAreaProps {
+    prompt: string;
+    onPromptChange: (value: string) => void;
+    onSubmit: () => void;
+    onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+    isLoading: boolean;
+    label?: string;  // New optional label prop
+}
+
+export default function PromptArea({
+    prompt,
+    onPromptChange,
+    onSubmit,
+    onKeyDown,
+    isLoading,
+    label,  // Destructure the label prop
+}: PromptAreaProps) {
+    return (
+        <div className="mb-6">
+            <label htmlFor="prompt" className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200">
+                {label || "Describe your Blog"}
+            </label>
+            <div className="flex items-start gap-2">
+                <textarea
+                    id="prompt"
+                    value={prompt}
+                    onChange={(e) => onPromptChange(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="e.g., A tutorial on how to make perfect coffee..."
+                    rows={4}
+                    className="block w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                />
+                <button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={isLoading}
+                    className="mt-1 inline-flex h-10 items-center justify-center self-end rounded bg-blue-600 px-3 py-2 font-medium text-white shadow hover:bg-blue-700 dark:hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    title="Submit (Ctrl+Enter)"
+                >
+                    <ArrowUpIcon />
+                </button>
+            </div>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                Press{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Enter
+                </kbd>{' '}
+                to submit. Hold{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Shift
+                </kbd>{' '}
+                +{' '}
+                <kbd className="rounded bg-gray-200 px-1 text-xs text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+                    Enter
+                </kbd>{' '}
+                to add a new line.
+            </p>
+        </div>
+    );
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/ProcessingModal.tsx ==========
+
+// File: /app/editor/components/ProcessingModal.tsx
+'use client'
+
+import React from 'react'
+
+interface ProcessingModalProps {
+    workflowTitle: string;
+    prompt: string;
+}
+
+export default function ProcessingModal({ workflowTitle, prompt }: ProcessingModalProps) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-md rounded bg-white p-6 text-center dark:bg-gray-800">
+                <div className="flex justify-center mb-4">
+                    {/* A simple spinner icon */}
+                    <svg
+                        className="animate-spin h-8 w-8 text-blue-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">Processing your request...</h3>
+                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    The LLM is working on your prompt using{' '}
+                    <span className="font-bold">{workflowTitle}</span>.
+                    <br />
+                    This may take up to a minute.
+                </p>
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/FrontmatterPreview.tsx ==========
+
+// File: /app/editor/components/FrontmatterPreview.tsx
+'use client'
+
+import React from 'react'
+
+interface FrontmatterPreviewProps {
+    frontmatter: Record<string, any>
+}
+
+export default function FrontmatterPreview({ frontmatter }: FrontmatterPreviewProps) {
+    if (!frontmatter || Object.keys(frontmatter).length === 0) return null
+
+    return (
+        <div className="mb-6 p-3 border rounded bg-gray-50 dark:bg-gray-800">
+            <h3 className="font-bold mb-2">Front Matter</h3>
+            <div className="space-y-2">
+                {Object.entries(frontmatter).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                            {key}:
+                        </span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100">
+                            {String(value)}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/AiOutputPreview.tsx ==========
+
+// File: /app/editor/AiOutputPreview.tsx
+'use client'
+
+import React from 'react'
+import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+import { components as defaultMDXComponents } from '@/components/MDXComponents'
+
+interface AiOutputPreviewProps {
+  mdx: MDXRemoteSerializeResult | null
+}
+
+export default function AiOutputPreview({ mdx }: AiOutputPreviewProps) {
+  // Check if the mdx prop exists and has the necessary compiledSource property.
+  if (!mdx || !('compiledSource' in mdx)) {
+    return <div className="p-4 text-gray-600">No blog content found.</div>
+  }
+
+  // Merge in frontmatter if it doesn’t exist.
+  const effectiveMDX = { ...mdx, frontmatter: mdx.frontmatter || {} };
+
+  const hasFrontmatter =
+    effectiveMDX.frontmatter &&
+    Object.keys(effectiveMDX.frontmatter).length > 0;
+
+  return (
+    <div className="prose dark:prose-invert p-4">
+      {hasFrontmatter && (
+        <Disclosure>
+          {({ open }) => (
+            <div className="mb-6">
+              <DisclosureButton className="flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75 dark:text-gray-100 dark:bg-gray-800">
+                <span>Front Matter</span>
+                <span>{open ? 'Hide' : 'Show'}</span>
+              </DisclosureButton>
+              <DisclosurePanel className="px-4 pt-4 pb-2 text-sm text-gray-500 dark:text-gray-300">
+                <form className="space-y-2">
+                  {Object.entries(effectiveMDX.frontmatter).map(([key, value]) => (
+                    <div key={key} className="flex flex-col">
+                      <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {key}
+                      </label>
+                      <input
+                        type="text"
+                        value={String(value)}
+                        readOnly
+                        className="w-full rounded border border-gray-300 p-1 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                      />
+                    </div>
+                  ))}
+                </form>
+              </DisclosurePanel>
+            </div>
+          )}
+        </Disclosure>
+      )}
+      <MDXRemote {...effectiveMDX} components={defaultMDXComponents} />
+    </div>
+  );
+}
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/TopBar.tsx ==========
+
+// File: /app/editor/components/TopBar.tsx
+'use client'
+
+import React from 'react'
+
+interface ButtonConfig {
+    text: string
+    onClick: () => void
+    className?: string
+}
+
+interface TopBarProps {
+    leftButtonText: string
+    onLeftButtonClick: () => void
+    rightButtons: ButtonConfig[]
+}
+
+export default function TopBar({ leftButtonText, onLeftButtonClick, rightButtons }: TopBarProps) {
+    return (
+        <div className="flex items-center justify-between bg-gray-100 p-4 dark:bg-gray-800">
+            <button
+                onClick={onLeftButtonClick}
+                className="rounded bg-gray-200 px-4 py-2 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+                {leftButtonText}
+            </button>
+            <div className="space-x-2">
+                {rightButtons.map((btn, index) => (
+                    <button
+                        key={index}
+                        onClick={btn.onClick}
+                        className={`rounded px-4 py-2 text-white ${btn.className ? btn.className : ''}`}
+                    >
+                        {btn.text}
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/ArrowUpIcon.tsx ==========
+
+// File: /app/editor/components/ArrowUpIcon.tsx
+'use client'
+
+import React from 'react'
+
+export default function ArrowUpIcon() {
+    return (
+        <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/editor/components/WorkflowButtons.tsx ==========
+
+// File: /app/editor/components/WorkflowButtons.tsx
+'use client'
+
+import React from 'react'
+
+interface Workflow {
+    key: string
+    title: string
+}
+
+interface WorkflowButtonsProps {
+    workflows: Workflow[]
+    selectedWorkflow: string
+    onSelectWorkflow: (workflowKey: string) => void
+    isLoading: boolean
+}
+
+export default function WorkflowButtons({
+    workflows,
+    selectedWorkflow,
+    onSelectWorkflow,
+    isLoading,
+}: WorkflowButtonsProps) {
+    return (
+        <div className="mb-6 flex flex-wrap gap-2">
+            {workflows.map((wf) => {
+                const isSelected = wf.key === selectedWorkflow
+                return (
+                    <button
+                        key={wf.key}
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => onSelectWorkflow(wf.key)}
+                        className={[
+                            'rounded px-4 py-2 font-medium shadow transition-colors',
+                            isSelected
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:hover:text-white',
+                            isLoading ? 'opacity-60 cursor-not-allowed' : '',
+                        ].join(' ')}
+                    >
+                        {wf.title}
+                    </button>
+                )
+            })}
+        </div>
+    )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/blog/page.tsx ==========
+
+import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { allBlogs } from 'contentlayer/generated'
+import { genPageMetadata } from 'app/seo'
+import ListLayout from '@/layouts/ListLayoutWithTags'
+
+const POSTS_PER_PAGE = 5
+
+export const metadata = genPageMetadata({ title: 'Blog' })
+
+export default async function BlogPage(props: { searchParams: Promise<{ page: string }> }) {
+  const posts = allCoreContent(sortPosts(allBlogs))
+  const pageNumber = 1
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
+  const initialDisplayPosts = posts.slice(0, POSTS_PER_PAGE * pageNumber)
+  const pagination = {
+    currentPage: pageNumber,
+    totalPages: totalPages,
+  }
+
+  return (
+    <ListLayout
+      posts={posts}
+      initialDisplayPosts={initialDisplayPosts}
+      pagination={pagination}
+      title="All Posts"
+    />
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/blog/[...slug]/page.tsx ==========
+
+import 'css/prism.css'
+import 'katex/dist/katex.css'
+
+import PageTitle from '@/components/PageTitle'
+import { components } from '@/components/MDXComponents'
+import { MDXLayoutRenderer } from 'pliny/mdx-components'
+import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
+import { allBlogs, allAuthors } from 'contentlayer/generated'
+import type { Authors, Blog } from 'contentlayer/generated'
+import PostSimple from '@/layouts/PostSimple'
+import PostLayout from '@/layouts/PostLayout'
+import PostBanner from '@/layouts/PostBanner'
+import { Metadata } from 'next'
+import siteMetadata from '@/data/siteMetadata'
+import { notFound } from 'next/navigation'
+
+const defaultLayout = 'PostLayout'
+const layouts = {
+  PostSimple,
+  PostLayout,
+  PostBanner,
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string[] }>
+}): Promise<Metadata | undefined> {
+  const params = await props.params
+  const slug = decodeURI(params.slug.join('/'))
+  const post = allBlogs.find((p) => p.slug === slug)
+  const authorList = post?.authors || ['default']
+  const authorDetails = authorList.map((author) => {
+    const authorResults = allAuthors.find((p) => p.slug === author)
+    return coreContent(authorResults as Authors)
+  })
+  if (!post) {
+    return
+  }
+
+  const publishedAt = new Date(post.date).toISOString()
+  const modifiedAt = new Date(post.lastmod || post.date).toISOString()
+  const authors = authorDetails.map((author) => author.name)
+  let imageList = [siteMetadata.socialBanner]
+  if (post.images) {
+    imageList = typeof post.images === 'string' ? [post.images] : post.images
+  }
+  const ogImages = imageList.map((img) => {
+    return {
+      url: img.includes('http') ? img : siteMetadata.siteUrl + img,
+    }
+  })
+
+  return {
+    title: post.title,
+    description: post.summary,
+    openGraph: {
+      title: post.title,
+      description: post.summary,
+      siteName: siteMetadata.title,
+      locale: 'en_US',
+      type: 'article',
+      publishedTime: publishedAt,
+      modifiedTime: modifiedAt,
+      url: './',
+      images: ogImages,
+      authors: authors.length > 0 ? authors : [siteMetadata.author],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.summary,
+      images: imageList,
+    },
+  }
+}
+
+export const generateStaticParams = async () => {
+  return allBlogs.map((p) => ({ slug: p.slug.split('/').map((name) => decodeURI(name)) }))
+}
+
+export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
+  const params = await props.params
+  const slug = decodeURI(params.slug.join('/'))
+  // Filter out drafts in production
+  const sortedCoreContents = allCoreContent(sortPosts(allBlogs))
+  const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug)
+  if (postIndex === -1) {
+    return notFound()
+  }
+
+  const prev = sortedCoreContents[postIndex + 1]
+  const next = sortedCoreContents[postIndex - 1]
+  const post = allBlogs.find((p) => p.slug === slug) as Blog
+  const authorList = post?.authors || ['default']
+  const authorDetails = authorList.map((author) => {
+    const authorResults = allAuthors.find((p) => p.slug === author)
+    return coreContent(authorResults as Authors)
+  })
+  const mainContent = coreContent(post)
+  const jsonLd = post.structuredData
+  jsonLd['author'] = authorDetails.map((author) => {
+    return {
+      '@type': 'Person',
+      name: author.name,
+    }
+  })
+
+  const Layout = layouts[post.layout || defaultLayout]
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Layout content={mainContent} authorDetails={authorDetails} next={next} prev={prev}>
+        <MDXLayoutRenderer code={post.body.code} components={components} toc={post.toc} />
+      </Layout>
+    </>
+  )
+}
+
+
+========== /home/serg/node/agentic-blog-writer-nextjs/app/blog/page/[page]/page.tsx ==========
+
+import ListLayout from '@/layouts/ListLayoutWithTags'
+import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { allBlogs } from 'contentlayer/generated'
+import { notFound } from 'next/navigation'
+
+const POSTS_PER_PAGE = 5
+
+export const generateStaticParams = async () => {
+  const totalPages = Math.ceil(allBlogs.length / POSTS_PER_PAGE)
+  const paths = Array.from({ length: totalPages }, (_, i) => ({ page: (i + 1).toString() }))
+
+  return paths
+}
+
+export default async function Page(props: { params: Promise<{ page: string }> }) {
+  const params = await props.params
+  const posts = allCoreContent(sortPosts(allBlogs))
+  const pageNumber = parseInt(params.page as string)
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
+
+  // Return 404 for invalid page numbers or empty pages
+  if (pageNumber <= 0 || pageNumber > totalPages || isNaN(pageNumber)) {
+    return notFound()
+  }
+  const initialDisplayPosts = posts.slice(
+    POSTS_PER_PAGE * (pageNumber - 1),
+    POSTS_PER_PAGE * pageNumber
+  )
+  const pagination = {
+    currentPage: pageNumber,
+    totalPages: totalPages,
+  }
+
+  return (
+    <ListLayout
+      posts={posts}
+      initialDisplayPosts={initialDisplayPosts}
+      pagination={pagination}
+      title="All Posts"
+    />
+  )
+}
+

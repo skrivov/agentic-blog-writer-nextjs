@@ -1,6 +1,14 @@
 
 # Technical Notes
 
+## Features of Agentic Blog Writer 
+
+- Leverages LLMs to generate new blog posts  
+- Modular, pluggable LLM workflows  
+- Workflow examples using [LangChain.js](https://js.langchain.com/docs/introduction/)  
+- Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
+- Built on top of  [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).  
+
 ## My Key Design Decisions  
 
 ### Future-Ready Development  

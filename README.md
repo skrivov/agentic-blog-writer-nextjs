@@ -12,7 +12,7 @@ Check out the documentation below to get started.
 - Leverages LLMs to generate new blog posts  
 - Modular, pluggable LLM workflows  
 - Workflow examples using [LangChain.js](https://js.langchain.com/docs/introduction/)  
-- Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform)  
+- Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform)  
 
 
 

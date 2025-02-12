@@ -73,6 +73,16 @@ Please note, that if you are using Windows, you may need to run:
 ```bash
 $env:PWD = $(Get-Location).Path
 ```
+## API Keys  
+You will need one or two API keys in a `.env` or `.env.local` file. 
+  
+
+```env
+### Required Agentic Blog Writer Keys:
+OPENAI_API_KEY="your_openai_api_key"
+# If you do not use the Deep Research workflow, provide any value for TAVILY_API_KEY
+TAVILY_API_KEY="your_tavily_api_key"
+```
 
 ## Development
 

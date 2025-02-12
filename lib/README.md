@@ -8,10 +8,17 @@
 - Workflow examples using [LangChain.js](https://js.langchain.com/docs/introduction/)  
 - Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
 - Built on top of  [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).
+- Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
 
 ## My Code
 
-The code for Agentic Blog Writer is located in the following folders: `lib`, `app/editor`, `app/api/ai`, and `app/api/post`. The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.
+The code for Agentic Blog Writer is located in the following folders:
+- `lib`
+- `app/editor`
+- `app/api/ai`
+- `app/api/post`
+
+I have intentionally kept my code cleanly separated from the base app's code. The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.
 
 
 ## My Key Design Decisions  

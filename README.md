@@ -13,6 +13,7 @@ Check out the documentation below to get started.
 - Modular, pluggable LLM workflows  
 - Workflow examples using [LangChain.js](https://js.langchain.com/docs/introduction/)  
 - Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
+- Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
 
 ## Code Location
 

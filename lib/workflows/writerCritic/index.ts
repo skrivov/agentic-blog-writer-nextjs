@@ -4,7 +4,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
 import { StateGraph, Annotation } from "@langchain/langgraph";
 import type { HandlerParams } from "../../types";
-import { writerInitialPrompt, writerRevisionPrompt, criticPrompt, formatPrompt } from "./prompts";
+import { writerInitialPromptV1, writerRevisionPromptV1, criticPromptV1 } from "./prompts";
+import { mdxFormattingInstructionsV1 } from "../../prompts/mdxFormatting";
 
 // Constant to control how many writer/critic cycles to run (default is 1)
 const MAX_ITERATIONS = 1;
@@ -30,8 +31,9 @@ const StateAnnotation = Annotation.Root({
  * Creates an initial blog post based solely on the topic.
  */
 async function writerInitial(state: typeof StateAnnotation.State) {
-    const prompt = writerInitialPrompt(state.topic);
+    const prompt = writerInitialPromptV1(state.topic);
     const response = await llm.invoke([new HumanMessage(prompt)]);
+    console.log("First Draft:", response.content);
     return { blogDraft: response.content };
 }
 
@@ -40,8 +42,9 @@ async function writerInitial(state: typeof StateAnnotation.State) {
  * Reviews the current blog post and returns suggestions for improvement.
  */
 async function critic(state: typeof StateAnnotation.State) {
-    const prompt = criticPrompt(state.blogDraft);
+    const prompt = criticPromptV1(state.blogDraft);
     const response = await llm.invoke([new HumanMessage(prompt)]);
+    console.log("Critic's response:", response.content);
     return { suggestions: response.content };
 }
 
@@ -50,17 +53,20 @@ async function critic(state: typeof StateAnnotation.State) {
  * Revises the blog post by incorporating the critic’s suggestions and increments the revision count.
  */
 async function writerRevision(state: typeof StateAnnotation.State) {
-    const prompt = writerRevisionPrompt(state.blogDraft, state.suggestions);
+    const prompt = writerRevisionPromptV1(state.blogDraft, state.suggestions);
     const response = await llm.invoke([new HumanMessage(prompt)]);
+    console.log("Writer revision:", response.content);
     return { blogDraft: response.content, iteration: state.iteration + 1 };
 }
 
 /**
  * Node: formatting
  * Formats the final blog post into a perfectly formatted MDX file with SEO‑friendly frontmatter.
+ * Uses the mdxFormattingInstructionsV1 from /lib/prompts/mdxFormatting.ts.
  */
 async function formatting(state: typeof StateAnnotation.State) {
-    const prompt = formatPrompt(state.blogDraft);
+    const instructions = mdxFormattingInstructionsV1();
+    const prompt = `${instructions}\n\nBlog Post:\n${state.blogDraft}`;
     const response = await llm.invoke([new HumanMessage(prompt)]);
     return { finalBlog: response.content };
 }

@@ -6,11 +6,11 @@ import { StateGraph, Annotation } from "@langchain/langgraph";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import type { HandlerParams } from "../../types";
 import {
-    researchSummaryPrompt,
-    draftBlogPrompt,
-    refineBlogPrompt,
-    seoPrompt,
-    formatMdxPrompt,
+    researchSummaryPromptV1,
+    draftBlogPromptV1,
+    refineBlogPromptV1,
+    seoPromptV1,
+    formatMdxPromptV1,
 } from "./prompts";
 
 // Import the latest Tavily retriever
@@ -55,26 +55,28 @@ async function researchNode(state: typeof StateAnnotation.State) {
     const aggregated = results
         .map((doc: any) => `${doc.metadata.title}: ${doc.pageContent}`)
         .join("\n");
+    console.log("Research Results: ", aggregated)
     return { searchResults: aggregated };
 }
 
 // Node: Summarize the research results
 async function summarizeNode(state: typeof StateAnnotation.State) {
-    const prompt = researchSummaryPrompt(state.topic, state.searchResults);
+    const prompt = researchSummaryPromptV1(state.topic, state.searchResults);
     const response = await llm.invoke([new HumanMessage(prompt)]);
+    console.log("Summary: ", response.content)
     return { summary: response.content };
 }
 
 // Node: Draft the blog post based on the research summary
 async function draftNode(state: typeof StateAnnotation.State) {
-    const prompt = draftBlogPrompt(state.topic, state.summary);
+    const prompt = draftBlogPromptV1(state.topic, state.summary);
     const response = await llm.invoke([new HumanMessage(prompt)]);
     return { draft: response.content };
 }
 
 // Node: Refine the blog draft (iterative refinement)
 async function refineNode(state: typeof StateAnnotation.State) {
-    const prompt = refineBlogPrompt(state.draft);
+    const prompt = refineBlogPromptV1(state.draft);
     const response = await llm.invoke([new HumanMessage(prompt)]);
     return { refined: response.content, iteration: state.iteration + 1 };
 }
@@ -90,7 +92,7 @@ interface SEOData {
 }
 
 async function seoNode(state: typeof StateAnnotation.State) {
-    const prompt = seoPrompt(state.topic, state.refined);
+    const prompt = seoPromptV1(state.topic, state.refined);
     const response = await llm.invoke([new HumanMessage(prompt)]);
 
     // Use the JSON output parser to parse the response.
@@ -105,7 +107,7 @@ async function seoNode(state: typeof StateAnnotation.State) {
 // Node: Format final output in MDX
 async function formatNode(state: typeof StateAnnotation.State) {
     const seoData = JSON.parse(state.seoData);
-    const prompt = formatMdxPrompt(seoData);
+    const prompt = formatMdxPromptV1(seoData);
     const response = await llm.invoke([new HumanMessage(prompt)]);
     return { finalMdx: response.content };
 }

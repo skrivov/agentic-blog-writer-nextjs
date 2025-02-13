@@ -9,6 +9,7 @@
 - Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
 - Built on top of  [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).
 - Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
+- **Limitation:** Rebuilding Contentlayer in production is currently not working reliably.  The best approach is to use the AiEditor in development mode locally, save changes to your local Git repository, and then push those changes.
 
 ## My Code
 
@@ -32,6 +33,7 @@ In the world of blog and documentation writing, Markdown is king. Many popular t
 ### Markdown Processing Focus  
 I knew that a significant portion of the development effort would go into processing Markdown—and that was exactly the case. However, the payoff was a clean, feature-rich blog editor with syntax-highlighted code blocks. For instance, I integrated **Rehype Prism Plus**, a plugin for the *rehype* library that enables code block highlighting in HTML.  
 
+
 ### Pluggable Workflow Design  
 To make my project a useful platform for testing LLM workflows, I implemented a modular workflow system. Adding a new workflow is straightforward:  
 
@@ -45,6 +47,10 @@ Following best practices, I kept versioned prompts in separate files to ensure m
 
 ### Reusing Common Prompts  
 I factored out reusable prompt fragments, storing them in `lib/prompts` for consistency across workflows. 
+
+### Content Layer Issues
+
+Choosing Contentlayer instead of plain Markdown as a base was a mistake. It is very hard to control Contentlayer as it is made for static websites.
 
 ## My Approach to Prompt Engineering
 

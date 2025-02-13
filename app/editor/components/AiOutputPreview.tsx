@@ -17,23 +17,22 @@ export default function AiOutputPreview({ mdx }: AiOutputPreviewProps) {
   }
 
   // Merge in frontmatter if it doesn’t exist.
-  const effectiveMDX = { ...mdx, frontmatter: mdx.frontmatter || {} };
+  const effectiveMDX = { ...mdx, frontmatter: mdx.frontmatter || {} }
 
   const hasFrontmatter =
-    effectiveMDX.frontmatter &&
-    Object.keys(effectiveMDX.frontmatter).length > 0;
+    effectiveMDX.frontmatter && Object.keys(effectiveMDX.frontmatter).length > 0
 
   return (
-    <div className="prose dark:prose-invert p-4">
+    <div className="prose p-4 dark:prose-invert">
       {hasFrontmatter && (
         <Disclosure>
           {({ open }) => (
             <div className="mb-6">
-              <DisclosureButton className="flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75 dark:text-gray-100 dark:bg-gray-800">
+              <DisclosureButton className="flex w-full justify-between rounded-lg bg-gray-200 px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-300 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75 dark:bg-gray-800 dark:text-gray-100">
                 <span>Front Matter</span>
                 <span>{open ? 'Hide' : 'Show'}</span>
               </DisclosureButton>
-              <DisclosurePanel className="px-4 pt-4 pb-2 text-sm text-gray-500 dark:text-gray-300">
+              <DisclosurePanel className="px-4 pb-2 pt-4 text-sm text-gray-500 dark:text-gray-300">
                 <form className="space-y-2">
                   {Object.entries(effectiveMDX.frontmatter).map(([key, value]) => (
                     <div key={key} className="flex flex-col">
@@ -44,7 +43,7 @@ export default function AiOutputPreview({ mdx }: AiOutputPreviewProps) {
                         type="text"
                         value={String(value)}
                         readOnly
-                        className="w-full rounded border border-gray-300 p-1 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                        className="w-full rounded border border-gray-300 bg-white p-1 text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
                       />
                     </div>
                   ))}
@@ -56,5 +55,5 @@ export default function AiOutputPreview({ mdx }: AiOutputPreviewProps) {
       )}
       <MDXRemote {...effectiveMDX} components={defaultMDXComponents} />
     </div>
-  );
+  )
 }

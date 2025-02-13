@@ -5,7 +5,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import matter from 'gray-matter'
 import siteMetadata from '@/data/siteMetadata'
-import { rebuildContentlayer } from '@/lib/contentlayer/rebuildContentlayer';
+import { rebuildContentlayer } from '@/lib/contentlayer/rebuildContentlayer'
 
 export async function POST(req: Request) {
   try {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     // This ensures that the "/blog" route is rebuilt on the next request with the latest data.
     if (process.env.NODE_ENV === 'production') {
       // This is not working reliably
-      // await rebuildContentlayer();
+      await rebuildContentlayer()
       // Import revalidatePath from Next.js cache API.
       const { revalidatePath } = await import('next/cache')
       await revalidatePath('/blog')

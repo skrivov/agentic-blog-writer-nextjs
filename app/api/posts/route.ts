@@ -6,6 +6,7 @@ import path from 'path'
 import matter from 'gray-matter'
 import siteMetadata from '@/data/siteMetadata'
 import { rebuildContentlayer } from '@/lib/contentlayer/rebuildContentlayer'
+import { exec } from 'child_process'
 
 export async function POST(req: Request) {
   try {
@@ -47,9 +48,21 @@ export async function POST(req: Request) {
     if (process.env.NODE_ENV === 'production') {
       // This is not working reliably
       await rebuildContentlayer()
+
+      // Run the postbuild script to regenerate RSS feeds, etc.
+      await new Promise<void>((resolve, reject) => {
+        exec('node ./scripts/postbuild.mjs', (error, stdout, stderr) => {
+          if (error) {
+            console.error('Error running postbuild script:', error)
+            return reject(error)
+          }
+          console.log('Postbuild output:', stdout)
+          resolve()
+        })
+      })
       // Import revalidatePath from Next.js cache API.
       const { revalidatePath } = await import('next/cache')
-      await revalidatePath('/blog')
+      await revalidatePath('/', 'layout')
     }
 
     return NextResponse.json({ message: 'Post saved successfully', filePath })

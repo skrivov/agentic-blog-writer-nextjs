@@ -50,7 +50,8 @@ I factored out reusable prompt fragments, storing them in `lib/prompts` for cons
 
 ### Content Layer Issues
 
-Choosing Contentlayer instead of plain Markdown as a base was a mistake. It is very hard to control Contentlayer as it is made for static websites.
+I conducted some initial research on our technology choices using ChatGPT's Deep Research. My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging since it is designed for static websites. In hindsight, choosing Contentlayer instead of plain Markdown as a base was a mistake.
+
 
 ## My Approach to Prompt Engineering
 

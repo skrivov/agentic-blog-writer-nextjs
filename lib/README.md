@@ -49,7 +49,8 @@ I factored out reusable prompt fragments, storing them in `lib/prompts` for cons
 
 ### Content Layer Issues
 
-I conducted some initial research on our technology choices using My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging. [Iam still working opn it]  
+I conducted some initial research on our technology choices using My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging. ~~ [Iam still working opn it] ~~ 
+I HAVE FIXED THE ISSUES THURTHDAY NIGHT
 
 
 ## My Approach to Prompt Engineering

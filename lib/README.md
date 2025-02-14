@@ -10,6 +10,12 @@
 - Built on top of  [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).
 - Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
 
+## TODO:
+- Fix rendering of the Tags page in production mode.
+- Display a spinning wheel after the "Publish" button is pressed to indicate that the file is in the process of being saved.
+
+
+
 ## My Code
 
 The code for Agentic Blog Writer is located in the following folders:

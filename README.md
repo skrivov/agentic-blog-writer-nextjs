@@ -16,6 +16,11 @@ Check out the documentation below to get started.
 - Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
 
 
+## TODO:
+- Fix rendering of the Tags page in production mode.
+- Display a spinning wheel after the "Publish" button is pressed to indicate that the file is in the process of being saved.
+
+
 ## Code Location
 
 The code for Agentic Blog Writer is located in the following folders: `lib`, `app/editor`, `app/api/ai`, and `app/api/post`. ~~The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.~~ 

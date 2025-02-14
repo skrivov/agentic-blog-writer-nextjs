@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       ...frontmatter,
       // Directly use title and summary for SEO, falling back to site defaults if missing.
       title: frontmatter.title || siteMetadata.title,
-      description: frontmatter.summary || siteMetadata.description,
+      description: frontmatter.description || siteMetadata.description,
     }
 
     // Rebuild the MDX file with the updated frontmatter.

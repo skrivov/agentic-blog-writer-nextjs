@@ -3,11 +3,34 @@ import path from 'path'
 import { slug } from 'github-slugger'
 import { escape } from 'pliny/utils/htmlEscaper.js'
 import siteMetadata from '../data/siteMetadata.js'
-import tagData from '../app/tag-data.json' assert { type: 'json' }
 import { allBlogs } from '../.contentlayer/generated/index.mjs'
 import { sortPosts } from 'pliny/utils/contentlayer.js'
 
+// Determine output folder based on EXPORT env variable.
 const outputFolder = process.env.EXPORT ? 'out' : 'public'
+
+// Helper to generate tag data dynamically from all blog posts.
+function generateTagData(blogs) {
+  const tagsSet = new Set()
+  blogs.forEach((post) => {
+    if (post.tags) {
+      post.tags.forEach((t) => tagsSet.add(slug(t)))
+    }
+  })
+  // For example, return an object with each tag as a key (you could also return an array)
+  const tagsObj = {}
+  tagsSet.forEach((tag) => {
+    tagsObj[tag] = tag
+  })
+  return tagsObj
+}
+
+// Regenerate tag-data.json dynamically.
+const newTagData = generateTagData(allBlogs)
+writeFileSync(path.join(process.cwd(), 'app', 'tag-data.json'), JSON.stringify(newTagData, null, 2))
+
+// Now use the freshly generated tag data.
+const tagData = newTagData
 
 const generateRssItem = (config, post) => `
   <item>
@@ -39,20 +62,23 @@ const generateRss = (config, posts, page = 'feed.xml') => `
 
 async function generateRSS(config, allBlogs, page = 'feed.xml') {
   const publishPosts = allBlogs.filter((post) => post.draft !== true)
-  // RSS for blog post
+  // RSS for blog posts
   if (publishPosts.length > 0) {
     const rss = generateRss(config, sortPosts(publishPosts))
     writeFileSync(`./${outputFolder}/${page}`, rss)
   }
 
-  if (publishPosts.length > 0) {
-    for (const tag of Object.keys(tagData)) {
-      const filteredPosts = allBlogs.filter((post) => post.tags.map((t) => slug(t)).includes(tag))
-      const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
-      const rssPath = path.join(outputFolder, 'tags', tag)
-      mkdirSync(rssPath, { recursive: true })
-      writeFileSync(path.join(rssPath, page), rss)
-    }
+  // Iterate over the dynamically generated tags
+  for (const tag of Object.keys(tagData)) {
+    const filteredPosts = allBlogs.filter(
+      (post) => post.tags && post.tags.map((t) => slug(t)).includes(tag)
+    )
+    if (filteredPosts.length === 0) continue
+
+    const rss = generateRss(config, sortPosts(filteredPosts), `tags/${tag}/${page}`)
+    const rssPath = path.join(outputFolder, 'tags', tag)
+    mkdirSync(rssPath, { recursive: true })
+    writeFileSync(path.join(rssPath, page), rss)
   }
 }
 
@@ -60,4 +86,5 @@ const rss = () => {
   generateRSS(siteMetadata, allBlogs)
   console.log('RSS feed generated...')
 }
+
 export default rss

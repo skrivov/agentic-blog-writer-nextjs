@@ -14,7 +14,6 @@ Check out the documentation below to get started.
 - Workflow examples using [LangChain.js](https://js.langchain.com/docs/introduction/)  
 - Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
 - Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
-- **Limitation:** Rebuilding Contentlayer in production is currently not working.  The best approach is to use the AiEditor in development mode locally, save changes to your local Git repository, and then push those changes.
 
 
 ## Code Location

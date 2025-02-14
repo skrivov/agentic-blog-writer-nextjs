@@ -9,7 +9,6 @@
 - Agentic Workflow examples using [LangGraph.js](https://langchain-ai.github.io/langgraphjs/#langgraph-platform) 
 - Built on top of  [Tailwind Next.js Starter Blog](https://github.com/timlrx/tailwind-nextjs-starter-blog).
 - Currently, four workflows are implemented: Basic, Chain of Thought, Writer-Critic, and Deep Research
-- **Limitation:** Rebuilding Contentlayer in production is currently not working reliably.  The best approach is to use the AiEditor in development mode locally, save changes to your local Git repository, and then push those changes.
 
 ## My Code
 
@@ -50,7 +49,7 @@ I factored out reusable prompt fragments, storing them in `lib/prompts` for cons
 
 ### Content Layer Issues
 
-I conducted some initial research on our technology choices using ChatGPT's Deep Research. My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging since it is designed for static websites. In hindsight, choosing Contentlayer instead of plain Markdown as a base was a mistake.
+I conducted some initial research on our technology choices using My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging. [Iam still working opn it]  
 
 
 ## My Approach to Prompt Engineering
@@ -111,7 +110,7 @@ git clone https://github.com/skrivov/agentic-blog-writer-nextjs.git
 ## Installation
 
 ```bash
-yarn
+yarn install
 ```
 
 Please note, that if you are using Windows, you may need to run:

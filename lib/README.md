@@ -13,6 +13,8 @@
 ## TODO:
 - Fix rendering of the Tags page in production mode.
 - Display a spinning wheel after the "Publish" button is pressed to indicate that the file is in the process of being saved.
+- Add admin login with the password stored in the `.env` file, and make the AiEditor invisible to users who are not logged in.
+
 
 
 

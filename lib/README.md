@@ -18,7 +18,8 @@ The code for Agentic Blog Writer is located in the following folders:
 - `app/api/ai`
 - `app/api/post`
 
-I have intentionally kept my code cleanly separated from the base app's code. The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.
+~~I have intentionally kept my code cleanly separated from the base app's code. The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.~~
+The pages for `app`, `app/blog`, and `app/blog/[...slug]` have been modified to ensure that the app sees newly created content in production mode.
 
 
 ## My Key Design Decisions  
@@ -46,11 +47,6 @@ Following best practices, I kept versioned prompts in separate files to ensure m
 
 ### Reusing Common Prompts  
 I factored out reusable prompt fragments, storing them in `lib/prompts` for consistency across workflows. 
-
-### Content Layer Issues
-
-I conducted some initial research on our technology choices using My preliminary finding was that Contentlayer could be rebuilt in production mode. However, it turns out that controlling Contentlayer is very challenging. ~~ [Iam still working opn it] ~~ 
-I HAVE FIXED THE ISSUES THURTHDAY NIGHT
 
 
 ## My Approach to Prompt Engineering

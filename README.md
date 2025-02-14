@@ -18,7 +18,9 @@ Check out the documentation below to get started.
 
 ## Code Location
 
-The code for Agentic Blog Writer is located in the following folders: `lib`, `app/editor`, `app/api/ai`, and `app/api/post`. The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.
+The code for Agentic Blog Writer is located in the following folders: `lib`, `app/editor`, `app/api/ai`, and `app/api/post`. ~~The only significant change from the Tailwind Next.js Starter Blog is the replacement of the `summary` field with the `description` field.~~ 
+The pages for `app`, `app/blog`, and `app/blog/[...slug]` have been modified to ensure that the app sees newly created content in production mode.
+
 
 
 ## Features of Tailwind Nextjs Starter Blog

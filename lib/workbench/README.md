@@ -1,4 +1,4 @@
-# Workbench A/B Testing Framework
+# Workbench: A/B Testing Framework CONCEPT
 
 This library provides a flexible framework for running A/B tests on LLM-generated blog posts. Our goal is to compare different workflows (e.g., _basic_, _chainOfThoughts_, _writerCritic_, _deepResearch_) on a range of user prompts and then evaluate their outputs using custom judges.
 

@@ -8,7 +8,7 @@
  * @returns A prompt asking for a JSON output with a single boolean field "factual".
  */
 export const assessFactualityPromptV1 = (topic: string, blogContent: string): string =>
-    `You are a content analyst. Given the blog topic and the content below, determine whether the blog is intended to be factual (i.e., based on verifiable information) or non-factual (e.g. fiction, satire, or fantasy).
+  `You are a content analyst. Given the blog topic and the content below, determine whether the blog is intended to be factual (i.e., based on verifiable information) or non-factual (e.g. fiction, satire, or fantasy).
 
 Topic: "${topic}"
 Blog Content:
@@ -17,7 +17,7 @@ ${blogContent}
 Output a JSON object with the following format:
 {
   "factual": true   // Set to false if the blog is non-factual.
-}`;
+}`
 
 /**
  * Prompt to extract factual claims from the blog post.
@@ -26,7 +26,7 @@ Output a JSON object with the following format:
  * @returns A prompt asking for a JSON object of claims.
  */
 export const extractClaimsPromptV1 = (blogContent: string): string =>
-    `You are a fact-checking assistant. Extract all factual claims from the following blog post.
+  `You are a fact-checking assistant. Extract all factual claims from the following blog post.
   
 - Identify sentences that assert real-world facts.
 - For each claim, indicate whether it is verifiable using credible sources.
@@ -41,7 +41,7 @@ Output a JSON object with the following format:
 }
 
 Blog Content:
-${blogContent}`;
+${blogContent}`
 
 /**
  * Prompt to fact-check a single claim using external search results.
@@ -51,7 +51,7 @@ ${blogContent}`;
  * @returns A prompt asking for a JSON object evaluating the claim.
  */
 export const factCheckWithSearchPromptV1 = (claim: string, searchResults: string): string =>
-    `You are a fact-checking assistant. Verify the following factual claim using the provided external search results.
+  `You are a fact-checking assistant. Verify the following factual claim using the provided external search results.
 
 Claim: "${claim}"
 
@@ -70,4 +70,4 @@ Output a JSON object with this format:
   "correctness": "<true|false|uncertain>",
   "source": "<a credible source URL, or an empty string if unavailable>",
   "explanation": "<brief explanation>"
-}`;
+}`

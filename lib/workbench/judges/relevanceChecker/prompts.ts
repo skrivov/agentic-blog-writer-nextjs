@@ -29,4 +29,4 @@ export const relevanceJudgePromptV1 = (topic: string, generatedContent: string):
   {
     "score": (number, from 0 to 10),
     "explanation": (string, a brief justification for the score)
-  }`;
+  }`

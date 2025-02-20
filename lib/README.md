@@ -150,33 +150,33 @@ Agentic Blog Writer saves files on server filesystem. Apps that perform filesyst
 
 # Workbench A/B Testing Framework
 
-The code in `lib/workbench` is a foundation for a flexible framework for running A/B tests on LLM-generated blog posts. Our goal is to compare different workflows (e.g., _basic_, _chainOfThoughts_, _writerCritic_, _deepResearch_) on a range of user prompts and then evaluate their outputs using custom judges.
+This library provides a flexible framework for running A/B tests on LLM-generated blog posts. Our goal is to compare different workflows (e.g., _basic_, _chainOfThoughts_, _writerCritic_, _deepResearch_) on a range of user prompts and then evaluate their outputs using custom judges.
 
 ## 1. Evaluation Criteria for LLM-Generated Blog Posts
 
 When using a large language model (LLM) to produce blog content, several quality criteria determine how good the output is. Key aspects include:
 
 - **Coherence and Fluency:**  
-  The text should flow logically and read naturally, with no contradictions or disjointed sections. High fluency and logical coherence are fundamental for readability ([learn.microsoft.com](https://learn.microsoft.com)).
+  The text should flow logically and read naturally, with no contradictions or disjointed sections. High fluency and logical coherence are fundamental for readability.
 
 - **Factual Accuracy (Groundedness):**  
-  Content must be truthful and based on verifiable facts. LLMs can hallucinate details, so ensuring the output is fact-checked against reliable sources is critical ([learn.microsoft.com](https://learn.microsoft.com), [web.tapereal.com](https://web.tapereal.com)).  
+  Content must be truthful and based on verifiable facts. LLMs can hallucinate details, so ensuring the output is fact-checked against reliable sources is critical.  
   *Example:* A blog about _Nutriharvest Organic Fertilizer_ must be verified for its claims.
 
 - **Engagement and Readability:**  
-  The writing should be engaging with clear grammar and an appropriate reading level. If content is too dense or off-topic, readers may quickly bounce ([web.tapereal.com](https://web.tapereal.com)).
+  The writing should be engaging with clear grammar and an appropriate reading level. If content is too dense or off-topic, readers may quickly bounce.
 
 - **SEO Effectiveness:**  
-  The post should be optimized for search engines—using relevant keywords, clear headings, and proper meta descriptions to improve organic reach ([web.tapereal.com](https://web.tapereal.com)).
+  The post should be optimized for search engines—using relevant keywords, clear headings, and proper meta descriptions to improve organic reach.
 
 - **Originality:**  
-  The content must be novel and avoid plagiarism. While LLMs are trained on vast data, a unique perspective is crucial for SEO and user trust ([web.tapereal.com](https://web.tapereal.com)).
+  The content must be novel and avoid plagiarism. While LLMs are trained on vast data, a unique perspective is crucial for SEO and user trust.
 
 - **Relevance and Intent Alignment:**  
-  The post should address the intended topic or query. Drift or misalignment can reduce effectiveness ([blog.uptrain.ai](https://blog.uptrain.ai)).
+  The post should address the intended topic or query. Drift or misalignment can reduce effectiveness.
 
 - **Tone and Style Consistency:**  
-  Maintaining a consistent tone that aligns with the brand’s voice is essential. For instance, an educational blog should be friendly yet authoritative ([web.tapereal.com](https://web.tapereal.com)).
+  Maintaining a consistent tone that aligns with the brand’s voice is essential. For instance, an educational blog should be friendly yet authoritativ.
 
 In summary, a good LLM-generated blog post is **coherent, accurate, engaging, readable, SEO-optimized, original, and on-target** in relevance and tone.
 
@@ -191,7 +191,9 @@ Modern evaluation tools such as [braintrust.dev](https://www.braintrust.dev/) of
   Many existing systems use fixed heuristics that may not capture nuances like engagement or SEO performance, making them less adaptable to the diverse requirements of blog content.
 
 - **Scalability and Flexibility:**  
-  While Braintrust provides an evaluation framework, integrating multiple custom judges (e.g., for factuality, relevance, tone) requires additional development. Our workbench is designed to address these gaps with a modular, extensible approach.
+  While Braintrust provides an evaluation framework, integrating multiple custom judges (e.g., for factuality, relevance, tone) requires additional development. 
+  
+  Our workbench is designed to address these gaps with a modular, extensible approach.
 
 ## 3. Example: Evaluating Factuality
 
@@ -277,4 +279,3 @@ This command will:
 - Generate blog posts using the specified workflows.
 - Run each selected judge on the outputs.
 - Save a JSON report with results and evaluations.
-
